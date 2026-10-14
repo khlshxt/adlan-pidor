@@ -5,15 +5,13 @@ from google.genai import types
 
 # Инициализация клиента
 client = genai.Client(
-    api_key=os.environ["GEMINI_API_KEY"]
+    api_key=os.environ.get("GEMINI_API_KEY")
 )
 
 def chat(message, history):
-    # 1. Формируем историю в родном формате Gemini API
+    # Транслируем историю под формат Gemini (user -> user, assistant -> model)
     formatted_contents = []
-    
     for item in history:
-        # Gradio type="messages" передает роли "user" и "assistant"
         role = "user" if item["role"] == "user" else "model"
         formatted_contents.append(
             types.Content(
@@ -22,7 +20,7 @@ def chat(message, history):
             )
         )
     
-    # 2. Добавляем последнее сообщение пользователя
+    # Добавляем реплику пользователя
     formatted_contents.append(
         types.Content(
             role="user",
@@ -30,7 +28,7 @@ def chat(message, history):
         )
     )
     
-    # 3. Задаем системные инструкции для кастомизации личности
+    # Задаем системные инструкции
     system_instruction = (
         "Тебя зовут Адлан Гамагей. "
         "Ты дерзкий, умный и саркастичный ИИ. "
@@ -40,19 +38,18 @@ def chat(message, history):
     
     config = types.GenerateContentConfig(
         system_instruction=system_instruction,
-        temperature=0.7 # Немного творчества для сарказма
+        temperature=0.8
     )
     
-    # 4. Делаем запрос к модели
+    # Используем актуальную и быструю модель gemini-2.5-flash
     response = client.models.generate_content(
-        model="gemini-3.5-flash-lite",
+        model="gemini-2.5-flash",
         contents=formatted_contents,
         config=config
     )
     
     return response.text
 
-# Инициализация интерфейса Gradio
 app = gr.ChatInterface(
     fn=chat,
     type="messages",
@@ -65,4 +62,5 @@ if __name__ == "__main__":
         server_name="0.0.0.0",
         server_port=int(os.environ.get("PORT", 7860))
     )
+
 
