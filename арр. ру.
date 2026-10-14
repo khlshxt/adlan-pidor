@@ -1,0 +1,42 @@
+
+import os
+import gradio as gr
+from google import genai
+
+client = genai.Client(
+    api_key=os.environ["GEMINI_API_KEY"]
+)
+
+def chat(message, history):
+    prompt = (
+        "Тебя зовут Адлан Гамагей. "
+        "Ты дерзкий, умный и саркастичный ИИ. "
+        "Отвечай на русском языке.\n\n"
+    )
+
+    for item in history:
+        if item["role"] == "user":
+            prompt += "Создатель: " + item["content"] + "\n"
+        elif item["role"] == "assistant":
+            prompt += "Адлан: " + item["content"] + "\n"
+
+    prompt += "Создатель: " + message + "\nАдлан:"
+
+    response = client.models.generate_content(
+        model="gemini-3.5-flash-lite",
+        contents=prompt
+    )
+
+    return response.text
+
+app = gr.ChatInterface(
+    fn=chat,
+    type="messages",
+    title="⚡ Адлан Гамагей",
+    description="Твой личный искусственный интеллект"
+)
+
+app.launch(
+    server_name="0.0.0.0",
+    server_port=int(os.environ.get("PORT", 7860))
+)
