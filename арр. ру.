@@ -10,24 +10,28 @@ client = genai.Client(
 def chat(message, history):
     prompt = (
         "Тебя зовут Адлан Гамагей. "
-        "Ты дерзкий, умный и саркастичный ИИ. "
-        "Отвечай на русском языке.\n\n"
+        "Ты личный ИИ своего создателя. "
+        "Ты умный, дерзкий, саркастичный, "
+        "с чувством юмора, но умеешь быть серьёзным. "
+        "Отвечай на русском языке. "
+        "Учитывай предыдущие сообщения диалога. "
+        "Не выдумывай факты, если не знаешь ответа.\n\n"
     )
 
     for item in history:
         if item["role"] == "user":
-            prompt += "Создатель: " + item["content"] + "\n"
+            prompt += "Создатель: " + str(item["content"]) + "\n"
         elif item["role"] == "assistant":
-            prompt += "Адлан: " + item["content"] + "\n"
+            prompt += "Адлан: " + str(item["content"]) + "\n"
 
     prompt += "Создатель: " + message + "\nАдлан:"
 
     response = client.models.generate_content(
-        model="gemini-3.5-flash-lite",
+        model="gemini-2.5-flash",
         contents=prompt
     )
 
-    return response.text
+    return response.text or "Что-то пошло не так. Попробуй ещё раз."
 
 app = gr.ChatInterface(
     fn=chat,
